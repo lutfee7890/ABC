@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นับถอยหลังฝึกงาน — ลุตฟี</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #0c0f1a;
+    --surface: #141928;
+    --border:  #1e2740;
+    --accent:  #3b82f6;
+    --accent2: #60a5fa;
+    --done:    #22c55e;
+    --warn:    #f59e0b;
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'IBM Plex Sans Thai', sans-serif;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 560px;
+    position: relative;
+    z-index: 1;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.25rem;
+  }
+  .sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .progress-wrap { margin-bottom: 1.5rem; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .bar-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--done));
+    transition: width 1s ease;
+  }
+
+  /* summary sentence */
+  .summary-text {
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-bottom: 1.5rem;
+    min-height: 1.6rem;
+  }
+
+  /* countdown grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 0.5rem 0.75rem;
+    text-align: center;
+  }
+  .box-num {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent2);
+    display: block;
+  }
+  .box-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.4rem;
+    display: block;
+  }
+
+  /* date strip */
+  .dates {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .date-item {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem;
+  }
+  .date-item .lbl {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .date-item .val {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* status badge */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 99px;
+    border: 1px solid;
+  }
+  .status.before { color: var(--warn);   border-color: var(--warn);   background: rgba(245,158,11,0.08); }
+  .status.during { color: var(--accent2);border-color: var(--accent); background: rgba(59,130,246,0.08); }
+  .status.done   { color: var(--done);   border-color: var(--done);   background: rgba(34,197,94,0.08); }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .status.done .dot { animation: none; }
+
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 420px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .box-num { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <p class="eyebrow">อาชีวศึกษาระบบทวิภาคี · ปวส. ไฟฟ้า</p>
+  <h1>นับถอยหลังฝึกงาน</h1>
+  <p class="sub">นายลุตฟี เดเบาะ · รหัส 6830104007</p>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>ความคืบหน้า</span>
+      <span id="pct-label">0%</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- summary sentence -->
+  <p class="summary-text" id="summary">กำลังโหลด...</p>
+
+  <!-- countdown boxes: ชม / นาที / วินาที (เดือน+วันอยู่ใน summary) -->
+  <div class="grid">
+    <div class="box"><span class="box-num" id="b-h">--</span><span class="box-label">ชั่วโมง</span></div>
+    <div class="box"><span class="box-num" id="b-m">--</span><span class="box-label">นาที</span></div>
+    <div class="box"><span class="box-num" id="b-s">--</span><span class="box-label">วินาที</span></div>
+    <div class="box"><span class="box-num" id="b-d">--</span><span class="box-label">วันนี้ผ่านไป%</span></div>
+  </div>
+
+  <div class="dates">
+    <div class="date-item">
+      <span class="lbl">เริ่มต้น</span>
+      <span class="val">1 มิ.ย. 2569</span>
+    </div>
+    <div class="date-item">
+      <span class="lbl">สิ้นสุด</span>
+      <span class="val">26 ก.ย. 2569</span>
+    </div>
+    <div class="date-item">
+      <span class="lbl">รวม</span>
+      <span class="val">118 วัน</span>
+    </div>
+  </div>
+
+  <div id="status-badge" class="status before">
+    <span class="dot"></span>
+    <span id="status-text">กำลังโหลด...</span>
+  </div>
+
+  <div class="footer-row">
+    <div>📍 ร้านนัน อิเล็กทรอนิกส์ เบตง ยะลา</div>
+    <div id="clock-now">--:--:--</div>
+  </div>
+</div>
+
+<script>
+  const START    = new Date('2026-06-01T00:00:00');
+  const END      = new Date('2026-09-26T23:59:59');
+  const TOTAL_MS = END - START;
+
+  const pad = n => String(n).padStart(2, '0');
+
+  // คำนวณเดือนและวันที่เหลือระหว่าง now กับ target
+  function diffMonthsDays(from, to) {
+    let y1 = from.getFullYear(), m1 = from.getMonth(), d1 = from.getDate();
+    let y2 = to.getFullYear(),   m2 = to.getMonth(),   d2 = to.getDate();
+    let months = (y2 - y1) * 12 + (m2 - m1);
+    let days   = d2 - d1;
+    if (days < 0) {
+      months--;
+      // วันในเดือนก่อน to
+      days += new Date(y2, m2, 0).getDate();
+    }
+    if (months < 0) months = 0;
+    return { months, days };
+  }
+
+  function buildSummary(months, days, mode) {
+    if (mode === 'done') return '🎉 จบการฝึกงานแล้ว!';
+    const prefix = mode === 'before' ? 'เริ่มฝึกงานอีก' : 'เหลืออีก';
+    let parts = [];
+    if (months > 0) parts.push(`${months} เดือน`);
+    if (days   > 0) parts.push(`${days} วัน`);
+    if (parts.length === 0) parts.push('น้อยกว่า 1 วัน');
+    return `${prefix} ${parts.join(' ')}`;
+  }
+
+  function tick() {
+    const now = new Date();
+
+    // นาฬิกา
+    document.getElementById('clock-now').textContent =
+      `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    let diff, pct, mode;
+
+    if (now < START) {
+      diff = START - now;
+      pct  = 0;
+      mode = 'before';
+    } else if (now <= END) {
+      diff = END - now;
+      pct  = Math.min(((now - START) / TOTAL_MS) * 100, 100);
+      mode = 'during';
+    } else {
+      diff = 0;
+      pct  = 100;
+      mode = 'done';
+    }
+
+    // progress
+    document.getElementById('bar').style.width = pct.toFixed(1) + '%';
+    document.getElementById('pct-label').textContent = pct.toFixed(1) + '%';
+
+    // summary sentence (เดือน + วัน)
+    const target = mode === 'before' ? START : END;
+    const { months, days } = diffMonthsDays(now, target);
+    document.getElementById('summary').textContent = buildSummary(months, days, mode);
+
+    // boxes: ชม / นาที / วินาที / % วันนี้
+    document.getElementById('b-h').textContent = pad(Math.floor((diff % 86400000) / 3600000));
+    document.getElementById('b-m').textContent = pad(Math.floor((diff % 3600000)  / 60000));
+    document.getElementById('b-s').textContent = pad(Math.floor((diff % 60000)    / 1000));
+
+    // % ของวันนี้ที่ผ่านไป (มาก่อเป็นตัวเลข น่าสนใจกว่าแค่วัน)
+    const secOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    document.getElementById('b-d').textContent = Math.floor(secOfDay / 864) + '%';
+
+    // status badge
+    const statusMap = {
+      before: 'ยังไม่ถึงวันฝึกงาน',
+      during: '🔥 กำลังฝึกงานอยู่',
+      done:   '🎉 ฝึกงานเสร็จสิ้นแล้ว!',
+    };
+    const sb = document.getElementById('status-badge');
+    sb.className = 'status ' + mode;
+    document.getElementById('status-text').textContent = statusMap[mode];
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
